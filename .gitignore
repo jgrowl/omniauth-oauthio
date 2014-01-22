@@ -1,0 +1,10 @@
+*.gem
+.bundle
+.rspec
+/Gemfile.lock
+pkg/*
+.powenv
+tmp
+bin
+.idea
+*.iml
