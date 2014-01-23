@@ -1,7 +1,7 @@
-#require 'bundler/setup'
-#require 'sinatra/base'
-#require 'omniauth-facebook'
-#
+require 'bundler/setup'
+require 'sinatra/base'
+require 'omniauth-oauthio'
+
 #SCOPE = 'email,read_stream'
 #
 #class App < Sinatra::Base

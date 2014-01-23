@@ -1,14 +1,14 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path('../lib', __FILE__)
-require 'omniauth/oauth-io/version'
+require 'omniauth/oauthio/version'
 
 Gem::Specification.new do |s|
-  s.name     = 'omniauth-oauth-io'
-  s.version  = OmniAuth::OauthIo::VERSION
+  s.name     = 'omniauth-oauthio'
+  s.version  = OmniAuth::Oauthio::VERSION
   s.authors  = ['Jonathan Rowlands']
   s.email    = ['jonrowlands83@gmail.com']
   s.summary  = 'OAuth.io Strategy for OmniAuth'
-  s.homepage = 'https://github.com/jgrowl/omniauth-oauth-io'
+  s.homepage = 'https://github.com/jgrowl/omniauth-oauthio'
   s.license  = 'MIT'
 
   s.files         = `git ls-files`.split("\n")

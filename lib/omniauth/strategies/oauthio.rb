@@ -4,19 +4,121 @@ require 'openssl'
 require 'rack/utils'
 require 'uri'
 
+
+module Oauthio
+  module Strategy
+    # The Authorization Code Strategy
+    #
+    # @see http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-4.1
+    class OauthioAuthCode < OAuth2::Strategy::AuthCode
+      # The required query parameters for the authorize URL
+      #
+      # @param [Hash] params additional query parameters
+      def authorize_params(params={})
+        params.merge('response_type' => 'code', 'k' => @client.id)
+      end
+    end
+  end
+end
+
+module Oauthio
+  # The OAuth2::Client class
+  class Client < OAuth2::Client
+    def auth_code
+      @auth_code ||= Oauthio::Strategy::OauthioAuthCode.new(self)
+    end
+  end
+end
+
 module OmniAuth
   module Strategies
-    class OauthIo < OmniAuth::Strategies::OAuth2
+    class Oauthio < OmniAuth::Strategies::OAuth2
+
+      # Give your strategy a name.
+      option :name, "oauthio"
+
+      # This is where you pass the options you would pass when
+      # initializing your consumer from the OAuth gem.
+      option :client_options, {
+          :site => 'https://oauth.io',
+          :authorize_url => 'https://oauth.io/auth',
+          #:token_url => '/oauth/access_token'
+      }
+
+      # These are called after authentication has succeeded. If
+      # possible, you should try to set the UID without making
+      # additional calls (if the user id is returned with the token
+      # or as a URI parameter). This may not be possible with all
+      # providers.
+      uid{ raw_info['id'] }
+
+      info do
+        {
+            :name => raw_info['name'],
+            :email => raw_info['email']
+        }
+      end
+
+      extra do
+        {
+            'raw_info' => raw_info
+        }
+      end
+
+      def raw_info
+        @raw_info ||= access_token.get('/me').parsed
+      end
+
+      def client
+        ::Oauthio::Client.new(options.client_id, options.client_secret, deep_symbolize(options.client_options))
+      end
+
+      def client_with_provider(provider)
+        options.client_options.merge!({authorize_url: "/auth/#{provider}"})
+        client
+      end
+
+      def request_phase
+        params = authorize_params
+        provider = params[:provider]
+        params = params.except(:provider)
+
+        redirect_url = client_with_provider(provider).auth_code.authorize_url({:redirect_uri => callback_url}.merge(params))
+        redirect redirect_url
+      end
+
+      # The setup phase looks for the `:setup` option to exist and,
+      # if it is, will call either the Rack endpoint supplied to the
+      # `:setup` option or it will call out to the setup path of the
+      # underlying application. This will default to `/auth/:provider/setup`.
+      def setup_phase
+        if options[:setup].respond_to?(:call)
+          log :info, 'Setup endpoint detected, running now.'
+          options[:setup].call(env)
+        elsif options.setup?
+          log :info, 'Calling through to underlying application for setup.'
+          setup_env = env.merge('PATH_INFO' => setup_path, 'REQUEST_METHOD' => 'GET')
+          call_app!(setup_env)
+        end
+      end
+
+      def authorize_params
+        super.tap do |params|
+          %w[display scope auth_type provider].each do |v|
+            if request.params[v]
+              params[v.to_sym] = request.params[v]
+            end
+          end
+
+          params[:scope]
+        end
+      end
+
+
+
+
       #class NoAuthorizationCodeError < StandardError; end
       #class UnknownSignatureAlgorithmError < NotImplementedError; end
-      #
-      #DEFAULT_SCOPE = 'email'
-      #
-      #option :client_options, {
-      #  :site => 'https://graph.facebook.com',
-      #  :authorize_url => "https://www.facebook.com/dialog/oauth",
-      #  :token_url => '/oauth/access_token'
-      #}
       #
       #option :token_params, {
       #  :parse => :query
