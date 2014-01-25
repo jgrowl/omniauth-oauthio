@@ -15,7 +15,7 @@ Then `bundle install`.
 
 ## Usage
 
-`OmniAuth::Strategies::Facebook` is simply a Rack middleware. Read the OmniAuth docs for detailed instructions: https://github.com/intridea/omniauth.
+`OmniAuth::Strategies::Oauthio` is simply a Rack middleware. Read the OmniAuth docs for detailed instructions: https://github.com/intridea/omniauth.
 
 Here's a quick example, adding the middleware to a Rails app in `config/initializers/omniauth.rb`:
 
