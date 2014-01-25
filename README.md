@@ -8,7 +8,7 @@ OAuth.io Strategy for OmniAuth
 Add to your `Gemfile`:
 
 ```ruby
-gem 'omniauth-facebook'
+gem 'omniauth-oauthio', path: 'https://github.com/jgrowl/omniauth-oauthio.git'
 ```
 
 Then `bundle install`.
