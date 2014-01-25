@@ -312,7 +312,11 @@ module Oauthio
       # support for multiple options is needed, however we only have to conform to a single interface. We will take
       # the easy route of always expecting a json response.
       status = response.status
+      headers = response.headers
       response = JSON.parse(response.body)
+      response['status'] = status
+      response['headers'] = headers
+      response = Hashie::Mash.new response
 
       case response.status
         when 301, 302, 303, 307
@@ -356,13 +360,9 @@ module Oauthio
       end
       response = request(options[:token_method], token_url, opts)
 
-      #TODO: Convert response hash to Token AccessToken class
-
       #error = Error.new(response)
       #fail(error) if options[:raise_errors] && !(response.parsed.is_a?(Hash) && response.parsed['access_token'])
-      #access_token_class.from_hash(self, response.parsed.merge(access_token_opts))
-
-
+      access_token_class.from_hash(self, response.merge(access_token_opts))
     end
 
     # The Authorization Code strategy
@@ -468,7 +468,7 @@ module OmniAuth
 
       def auth_hash
         # Use the actual provider instead of oauthio!
-        hash = AuthHash.new(:provider => name, :uid => uid)
+        hash = AuthHash.new(:provider => access_token.params.provider, :uid => uid)
         hash.info = info unless skip_info?
         hash.credentials = credentials if credentials
         hash.extra = extra if extra
@@ -486,8 +486,6 @@ module OmniAuth
         self.access_token = build_access_token
         self.access_token = access_token.refresh! if access_token.expired?
 
-        # NOTE: I want to call base super, not OAuth2's
-        #super
         env['omniauth.auth'] = auth_hash
         call_app!
 
