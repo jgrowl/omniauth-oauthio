@@ -33,7 +33,8 @@ OAuth.popup provider, {state: A_RANDOM_STATE_ID}, (err, res) ->
     if (err)
       console.log err
     else
-        $http.post('http://example.com/users/auth/oauthio/callback', JSON.stringify(res)).success((response) ->
+        url = 'http://example.com/users/auth/oauthio/callback',
+        $http.post(url, JSON.stringify(res)).success((response) ->
             console.log 'successfully logged user in!'
             # Perform additional login steps
           ).error((response) ->
@@ -106,4 +107,5 @@ end
 ## Credit
 
 https://oauth.io/
+
 https://github.com/mkdynamic/omniauth-facebook
