@@ -44,6 +44,10 @@ OAuth.popup provider, {state: A_RANDOM_STATE_ID}, (err, res) ->
 
 ## Configuring
 
+### OAuth.io
+
+Be sure to enable the Server-side (code) option on any providers you want to use with this strategy.
+
 ### Custom Callback URL/Path
 
 You can set a custom `callback_url` or `callback_path` option to override the default value. See [OmniAuth::Strategy#callback_url](https://github.com/intridea/omniauth/blob/master/lib/omniauth/strategy.rb#L411) for more details on the default.
