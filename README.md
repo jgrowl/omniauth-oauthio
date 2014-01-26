@@ -70,14 +70,12 @@ def oauthio
       render json: {success: true}
     else
       session["devise.#{provider}_data"] = auth_hash
-      #redirect_to new_user_registration_url
       render json: {success: false, message: 'There was a problem adding user!'}
     end
-  end
+end
 
-  def auth_hash
+def auth_hash
     request.env['omniauth.auth']
-  end
 end
 ```
 
