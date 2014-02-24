@@ -3,6 +3,21 @@ omniauth-oauthio
 
 OAuth.io Strategy for OmniAuth
 
+# TODO
+
+Please note this strategy is still pretty experimental and is not complete
+
+1. I am using this mainly with a pure javascript/angularjs single page application that connects to a rails api, but
+there is no reason why this potentially work with a normal rails application that takes does not require javascript.
+I believe there is some missing functionality there and requires further testing.
+
+2. Currently, only facebook is supported. The main goal is that this could use every provider that oauth-io supports.
+There will have to be some work for that to happen though. A large part of every omniauth strategy is the marshalling
+of provider specific user information into a hash (credentials, info, and extra). There are two options I see: create
+a methods to perform this marshalling in omniauth-oauthio for each provider. This is what I am currently doing but it
+is less than idea. The other option is modify oauthd to provide a standardized way of gathering this info. That is
+the clean way of doing it but would require work and acceptance by the oauthio guys.
+
 ## Installing
 
 Add to your `Gemfile`:
