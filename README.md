@@ -25,21 +25,31 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
-Use OAuth javascript API, adding a post request to the success callback:
+The following steps on the front-end need to occur:
+
+1. Initialize the OAuth public key.
+
+2. Perform get request to initiate the request_phase, using the json=true option for SPA.
+
+3. Perform get request to initiate callback_phase.
+
+For example:
 
 ```coffeescript
 OAuth.initialize('YOUR_PUBLIC_KEY')
-OAuth.popup provider, {state: A_RANDOM_STATE_ID}, (err, res) ->
+
+$.get "http://localhost:3000/users/auth/oauthio?json=true", (data) ->
+    @options = data
+
+provider = 'facebook'
+
+OAuth.popup provider, {state: @option.state}, (err, res) ->
     if (err)
       console.log err
     else
-        url = 'http://example.com/users/auth/oauthio/callback',
-        $http.post(url, JSON.stringify(res)).success((response) ->
-            console.log 'successfully logged user in!'
-            # Perform additional login steps
-          ).error((response) ->
-            console.log 'error making post to callback'
-          )
+      $.get "http:localhost:3000/users/auth/oauthio/callback?state=@option.state", (data) ->
+        console.log(data)
+        # Perform additional login steps
 ```
 
 ## Configuring
