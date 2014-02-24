@@ -134,6 +134,13 @@ def self.find_for_oauthio_oauth(auth, signed_in_resource=nil)
 end
 ```
 
+# Understanding server side flow
+
+oauth.io describes how everything works in their [security](https://oauth.io/docs/security) section.
+
+![alt text](https://oauth.io/img/server-side-flow.png "Server side flow")
+
+
 ## Credit
 
 https://oauth.io/
