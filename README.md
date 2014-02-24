@@ -48,7 +48,7 @@ OAuth.popup provider, @options, (err, res) ->
     if (err)
       console.log err
     else
-      $.get "http:localhost:3000/users/auth/oauthio/callback?state=@options.state", (data) ->
+      $.get "http://localhost:3000/users/auth/oauthio/callback?state=@options.state", (data) ->
         console.log(data)
         # Perform additional login steps
 ```
