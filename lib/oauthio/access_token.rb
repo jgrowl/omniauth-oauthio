@@ -1,4 +1,5 @@
 module Oauthio
+  # TODO: Inherit from oauth2 AccessToken?
   class AccessToken
     attr_reader :client, :token, :expires_in, :expires_at, :params
     attr_accessor :options, :refresh_token

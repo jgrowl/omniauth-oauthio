@@ -25,6 +25,7 @@ module Oauthio
       @id = client_id
       @secret = client_secret
       @site = _opts.delete(:site)
+      @state = _opts.delete(:state)
       ssl = _opts.delete(:ssl)
       @options = {:authorize_url    => '/auth',
                   :token_url        => '/auth/access_token',
@@ -140,6 +141,11 @@ module Oauthio
         opts[:params] = params
       end
       response = request(options[:token_method], token_url, opts)
+
+      # Verify state in the response matches the one in the session
+      if response.state != @state
+        raise CallbackError.new(nil, :csrf_detected)
+      end
 
       #error = Error.new(response)
       #fail(error) if options[:raise_errors] && !(response.parsed.is_a?(Hash) && response.parsed['access_token'])
