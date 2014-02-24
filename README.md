@@ -41,13 +41,14 @@ OAuth.initialize('YOUR_PUBLIC_KEY')
 $.get "http://localhost:3000/users/auth/oauthio?json=true", (data) ->
     @options = data
 
+# Create a function that takes a provider as an argument to support multiple providers
 provider = 'facebook'
 
-OAuth.popup provider, @option, (err, res) ->
+OAuth.popup provider, @options, (err, res) ->
     if (err)
       console.log err
     else
-      $.get "http:localhost:3000/users/auth/oauthio/callback?state=@option.state", (data) ->
+      $.get "http:localhost:3000/users/auth/oauthio/callback?state=@options.state", (data) ->
         console.log(data)
         # Perform additional login steps
 ```
