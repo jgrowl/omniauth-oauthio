@@ -43,7 +43,7 @@ $.get "http://localhost:3000/users/auth/oauthio?json=true", (data) ->
 
 provider = 'facebook'
 
-OAuth.popup provider, {state: @option.state}, (err, res) ->
+OAuth.popup provider, @option, (err, res) ->
     if (err)
       console.log err
     else
