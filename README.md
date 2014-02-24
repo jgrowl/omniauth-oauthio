@@ -15,7 +15,7 @@ I believe there is some missing functionality there and requires further testing
 There will have to be some work for that to happen though. A large part of every omniauth strategy is the marshalling
 of provider specific user information into a hash (credentials, info, and extra). There are two options I see: create
 a methods to perform this marshalling in omniauth-oauthio for each provider. This is what I am currently doing but it
-is less than idea. The other option is modify oauthd to provide a standardized way of gathering this info. That is
+is less than ideal. The other option is modify oauthd to provide a standardized way of gathering this info. That is
 the clean way of doing it but would require work and acceptance by the oauthio guys.
 
 ## Installing
