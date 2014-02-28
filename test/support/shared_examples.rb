@@ -1,5 +1,5 @@
-## NOTE it would be useful if this lived in omniauth-oauth2 eventually
-#module OAuth2StrategyTests
+## NOTE it would be useful if this lived in omniauth-Oauthio eventually
+#module OauthioStrategyTests
 #  def self.included(base)
 #    base.class_eval do
 #      include ClientTests
