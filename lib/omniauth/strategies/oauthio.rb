@@ -95,8 +95,6 @@ module OmniAuth
       def verified_state?
         state = request.params['state']
         return false if state.to_s.empty?
-        t = session
-        #state == session.delete('omniauth.state')
         state == session['omniauth.state']
       end
     end
