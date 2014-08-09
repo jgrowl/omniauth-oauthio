@@ -152,7 +152,8 @@ module Oauthio
 
       #access_token_class.from_hash(providerClient, response.merge(access_token_opts))
 
-      provider_client = ::Oauthio::Client.new(@id, @secret, { :site => response.request.url })
+      provider_client = ::Oauthio::Client.new(@id, @secret)
+      # provider_client = ::Oauthio::Client.new(@id, @secret, { :site => response.request.url })
       access_token_class.from_hash(provider_client, response.merge(access_token_opts))
     end
 

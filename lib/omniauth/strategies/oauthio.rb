@@ -23,18 +23,74 @@ module OmniAuth
       option :client_id, nil
       option :client_secret, nil
 
+      # Returns true if the environment recognizes either the
+      # request or callback path.
+      def on_auth_path?
+        on_request_path? || on_callback_path?
+      end
+
       def client_with_provider(provider)
         options.client_options.merge!({authorize_url: "#{options.client_options.authorization_url}/#{provider}"})
         client
       end
 
+      def current_path
+        # This might not be completely safe. I want to ensure that the current_path does not have a format at the end
+        # so the .json should be removed.
+        super.split('.').first
+      end
+
+      def on_request_path?
+        if options.request_path.respond_to?(:call)
+          options.request_path.call(env)
+        else
+          on_path?(request_path)
+        end
+      end
+
+      def on_path?(path)
+        current_path.casecmp(path) == 0
+      end
+
+      def on_callback_path?
+        on_path?(callback_path)
+      end
+
+      def sub_provider
+        test = request.path.split("#{path_prefix}/#{name}/").last
+        slashes = test.split('/')
+        if slashes.length > 1
+          # return ''
+          return slashes.first.split('.').first
+        end
+
+        test.split('.').first
+      end
+
+      def request_path
+        # options[:request_path].is_a?(String) ? options[:request_path] : "#{path_prefix}/#{name}"
+        options[:request_path].is_a?(String) ? options[:request_path] : "#{path_prefix}/#{name}/#{sub_provider}"
+      end
+
+      def callback_path
+        path = options[:callback_path] if options[:callback_path].is_a?(String)
+        path ||= current_path if options[:callback_path].respond_to?(:call) && options[:callback_path].call(env)
+        path ||= custom_path(:request_path)
+        path ||= "#{path_prefix}/#{name}/#{sub_provider}/callback"
+        path
+      end
+
+      def path_prefix
+        options[:path_prefix] || OmniAuth.config.path_prefix
+      end
+
+
       def request_phase
         params = authorize_params
         # We may want to skip redirecting the user if calling from a SPA that does not want to reload the page.
         # The json option will return a json response instead of redirecting.
-        request_params = request.params
-        if request_params['json']
-          json = {state: params[:state]}.to_json
+        if request.path_info.include?('.json')
+          json = {state: session['omniauth.state']}.to_json
           return Rack::Response.new(json, 200, 'content-type' => 'application/json').finish
         end
 
@@ -48,7 +104,7 @@ module OmniAuth
       def auth_hash
         # Use the actual provider instead of oauthio!
         provider = access_token.params.provider
-        class_constant = "Oauthio::Providers::#{provider.classify}".constantize
+        class_constant = "Oauthio::Providers::Oauthio".constantize
         provider_info = class_constant.new(access_token, client.secret, options)
         hash = AuthHash.new(:provider => provider, :uid => provider_info.uid)
         hash.info = provider_info.info unless provider_info.skip_info?
@@ -93,6 +149,7 @@ module OmniAuth
       end
 
       def verified_state?
+        # state = authorize_params['state']
         state = request.params['state']
         return false if state.to_s.empty?
         state == session['omniauth.state']
