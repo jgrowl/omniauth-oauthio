@@ -1,8 +1,6 @@
 module Oauthio
   module Providers
     class Oauthio
-      include Base
-
       def initialize(access_token, secret, options)
         @access_token = access_token
         @secret = secret
@@ -75,6 +73,13 @@ module Oauthio
         hash.merge!('expires_at' => @access_token.expires_at) if @access_token.expires?
         hash.merge!('expires' => @access_token.expires?)
         hash
+      end
+
+      def prune!(hash)
+        hash.delete_if do |_, v|
+          prune!(v) if v.is_a?(Hash)
+          v.nil? || (v.respond_to?(:empty?) && v.empty?)
+        end
       end
     end
   end
