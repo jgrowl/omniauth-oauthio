@@ -92,7 +92,7 @@ module OmniAuth
           return Rack::Response.new(json, 200, 'content-type' => 'application/json').finish
         end
 
-        # TODO: Check the redirect url. I think it may be hitting the wrong url.
+        # TODO: Check the redirect url.
         provider = params[:provider]
         params = params.except(:provider)
         redirect_url = client_with_provider(provider).auth_code.authorize_url({:redirect_uri => callback_url}.merge(params))
@@ -100,10 +100,7 @@ module OmniAuth
       end
 
       def auth_hash
-        class_constant = "Oauthio::Providers::Oauthio".constantize
-        provider_info = class_constant.new(access_token, client.secret, options)
-        # TODO: We don't need to be fancy about this since we only have one real provider right?
-        # provider_info = Oauthio::Providers::Oauthio.new(access_token, client.secret, options)
+        provider_info = ::Oauthio::Providers::Oauthio.new(access_token, client.secret, options)
         provider = access_token.provider
         hash = AuthHash.new(:provider => provider, :uid => provider_info.uid)
         hash.info = provider_info.info unless provider_info.skip_info?
@@ -148,7 +145,6 @@ module OmniAuth
       end
 
       def verified_state?
-        # state = authorize_params['state']
         state = request.params['state']
         return false if state.to_s.empty?
         state == session['omniauth.state']
