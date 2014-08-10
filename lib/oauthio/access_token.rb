@@ -129,10 +129,10 @@ module Oauthio
       # oauthv = 1  # TODO: Update this
 
       if !@token.empty?
-        # oauthio_header = "k=#{k}&oauthv=#{oauthv}&access_token=#{@token}"
+        # oauthv=#{oauthv}
         oauthio_header = "k=#{k}&access_token=#{@token}"
       elsif !@oauth_token.empty? && !@oauth_token_secret.empty?
-        # oauthio_header = "k=#{k}&oauthv=#{oauthv}&oauth_token=#{@oauth_token}&oauth_token_secret=#{@oauth_token_secret}"
+        # oauthv=#{oauthv}
         oauthio_header = "k=#{k}&oauth_token=#{@oauth_token}&oauth_token_secret=#{@oauth_token_secret}"
       else
         # TODO: Throw error if no tokens found
