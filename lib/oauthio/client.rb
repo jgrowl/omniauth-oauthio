@@ -72,7 +72,6 @@ module Oauthio
     end
 
     def me_url(provider, params = nil)
-      # me_path = @options[:me_url].sub(/:provider/, '')
       connection.build_url(options[:me_url], params).to_s.sub(/:provider/, provider)
     end
 
@@ -150,13 +149,11 @@ module Oauthio
 
       # Verify state in the response matches the one in the session
       if response.state != @state
-        raise CallbackError.new(nil, :csrf_detected)
+        raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil, :csrf_detected);
       end
 
-      #error = Error.new(response)
-      #fail(error) if options[:raise_errors] && !(response.parsed.is_a?(Hash) && response.parsed['access_token'])
-
-      #access_token_class.from_hash(providerClient, response.merge(access_token_opts))
+      # error = Error.new(response)
+      # fail(error) if options[:raise_errors] && !(response.parsed.is_a?(Hash) && response.parsed['access_token'])
 
       provider_client = ::Oauthio::Client.new(@id, @secret, { :site => @site })
       access_token_class.from_hash(provider_client, response.merge(access_token_opts))
