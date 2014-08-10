@@ -137,8 +137,8 @@ module Oauthio
       end
       opts = {headers: {oauthio: oauthio_header}}
       # TODO: get a configured url
-      me_path = "https://oauth.io/auth/#{@provider}/me"
-      request(:get, me_path, opts)
+      me_url = client.me_url(provider)
+      request(:get, me_url, opts)
     end
 
     # Make a POST request with the Access Token

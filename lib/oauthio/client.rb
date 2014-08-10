@@ -29,6 +29,7 @@ module Oauthio
       ssl = _opts.delete(:ssl)
       @options = {:authorize_url    => '/auth',
                   :token_url        => '/auth/access_token',
+                  :me_url           => '/auth/:provider/me',
                   :token_method     => :post,
                   :connection_opts  => {},
                   :connection_build => block,
@@ -68,6 +69,11 @@ module Oauthio
     # @param [Hash] params additional query parameters
     def token_url(params = nil)
       connection.build_url(options[:token_url], params).to_s
+    end
+
+    def me_url(provider, params = nil)
+      # me_path = @options[:me_url].sub(/:provider/, '')
+      connection.build_url(options[:me_url], params).to_s.sub(/:provider/, provider)
     end
 
     # Makes a request relative to the specified site root.
@@ -152,8 +158,7 @@ module Oauthio
 
       #access_token_class.from_hash(providerClient, response.merge(access_token_opts))
 
-      provider_client = ::Oauthio::Client.new(@id, @secret)
-      # provider_client = ::Oauthio::Client.new(@id, @secret, { :site => response.request.url })
+      provider_client = ::Oauthio::Client.new(@id, @secret, { :site => @site })
       access_token_class.from_hash(provider_client, response.merge(access_token_opts))
     end
 
