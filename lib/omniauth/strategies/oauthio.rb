@@ -68,7 +68,6 @@ module OmniAuth
       end
 
       def request_path
-        # options[:request_path].is_a?(String) ? options[:request_path] : "#{path_prefix}/#{name}"
         options[:request_path].is_a?(String) ? options[:request_path] : "#{path_prefix}/#{name}/#{sub_provider}"
       end
 
@@ -83,7 +82,6 @@ module OmniAuth
       def path_prefix
         options[:path_prefix] || OmniAuth.config.path_prefix
       end
-
 
       def request_phase
         params = authorize_params
@@ -102,10 +100,11 @@ module OmniAuth
       end
 
       def auth_hash
-        # Use the actual provider instead of oauthio!
-        provider = access_token.params.provider
         class_constant = "Oauthio::Providers::Oauthio".constantize
         provider_info = class_constant.new(access_token, client.secret, options)
+        # TODO: We don't need to be fancy about this since we only have one real provider right?
+        # provider_info = Oauthio::Providers::Oauthio.new(access_token, client.secret, options)
+        provider = access_token.provider
         hash = AuthHash.new(:provider => provider, :uid => provider_info.uid)
         hash.info = provider_info.info unless provider_info.skip_info?
         hash.credentials = provider_info.credentials if provider_info.credentials

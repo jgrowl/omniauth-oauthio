@@ -1,7 +1,7 @@
 module Oauthio
   # TODO: Inherit from oauth2 AccessToken?
   class AccessToken
-    attr_reader :client, :token, :expires_in, :expires_at, :params
+    attr_reader :client, :provider, :token, :oauth_token, :oauth_token_secret, :expires_in, :expires_at, :params
     attr_accessor :options, :refresh_token
 
     class << self
@@ -11,7 +11,13 @@ module Oauthio
       # @param [Hash] a hash of AccessToken property values
       # @return [AccessToken] the initalized AccessToken
       def from_hash(client, hash)
-        new(client, hash.delete('access_token') || hash.delete(:access_token), hash)
+        # new(client, hash.delete('access_token') || hash.delete(:access_token), hash)
+        new(client,
+            hash.delete('provider') || hash.delete(:provider),
+            hash.delete('access_token') || hash.delete(:access_token),
+            hash.delete('oauth_token') || hash.delete(:oauth_token),
+            hash.delete('oauth_token_secret') || hash.delete(:oauth_token_secret),
+            hash)
       end
 
       # Initializes an AccessToken from a key/value application/x-www-form-urlencoded string
@@ -37,9 +43,12 @@ module Oauthio
     # @option opts [String] :header_format ('Bearer %s') the string format to use for the Authorization header
     # @option opts [String] :param_name ('access_token') the parameter name to use for transmission of the
     #    Access Token value in :body or :query transmission mode
-    def initialize(client, token, opts = {})
+    def initialize(client, provider, token, oauth_token, oauth_token_secret, opts = {})
       @client = client
+      @provider = provider
       @token = token.to_s
+      @oauth_token = oauth_token.to_s
+      @oauth_token_secret = oauth_token_secret.to_s
       [:refresh_token, :expires_in, :expires_at].each do |arg|
         instance_variable_set("@#{arg}", opts.delete(arg) || opts.delete(arg.to_s))
       end
@@ -113,6 +122,23 @@ module Oauthio
     # @see AccessToken#request
     def get(path, opts = {}, &block)
       request(:get, path, opts, &block)
+    end
+
+    def me()
+      k = @client.id
+      oauthv = 1  # TODO: Update this
+
+      if !@token.empty?
+        oauthio_header = "k=#{k}&oauthv=#{oauthv}&access_token=#{@token}"
+      elsif !@oauth_token.empty? && !@oauth_token_secret.empty?
+        oauthio_header = "k=#{k}&oauthv=#{oauthv}&oauth_token=#{@oauth_token}&oauth_token_secret=#{@oauth_token_secret}"
+      else
+        # TODO: Throw error if no tokens found
+      end
+      opts = {headers: {oauthio: oauthio_header}}
+      # TODO: get a configured url
+      me_path = "https://oauth.io/auth/#{@provider}/me"
+      request(:get, me_path, opts)
     end
 
     # Make a POST request with the Access Token
