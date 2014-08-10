@@ -57,7 +57,7 @@ OAuth.popup provider, @options, (err, res) ->
     if (err)
       console.log err
     else
-      $.get "http://localhost:3000/users/auth/oauthio/twitter/callback?state=@options.state", (data) ->
+      $.get "http://localhost:3000/users/auth/oauthio/twitter/callback.json?state=@options.state&code=@options.code", (data) ->
         console.log(data)
         # Perform additional login steps
 ```
