@@ -138,7 +138,6 @@ module Oauthio
         # TODO: Throw error if no tokens found
       end
       opts = {headers: {oauthio: oauthio_header}}
-      # TODO: get a configured url
       me_url = client.me_url(provider)
       request(:get, me_url, opts)
     end
