@@ -23,12 +23,6 @@ module OmniAuth
       option :client_id, nil
       option :client_secret, nil
 
-      # Returns true if the environment recognizes either the
-      # request or callback path.
-      def on_auth_path?
-        on_request_path? || on_callback_path?
-      end
-
       def client_with_provider(provider)
         options.client_options.merge!({authorize_url: "#{options.client_options.authorization_url}/#{provider}"})
         client
@@ -38,22 +32,6 @@ module OmniAuth
         # This might not be completely safe. I want to ensure that the current_path does not have a format at the end
         # so the .json should be removed.
         super.split('.').first
-      end
-
-      def on_request_path?
-        if options.request_path.respond_to?(:call)
-          options.request_path.call(env)
-        else
-          on_path?(request_path)
-        end
-      end
-
-      def on_path?(path)
-        current_path.casecmp(path) == 0
-      end
-
-      def on_callback_path?
-        on_path?(callback_path)
       end
 
       def sub_provider
@@ -72,10 +50,6 @@ module OmniAuth
         path ||= custom_path(:request_path)
         path ||= "#{path_prefix}/#{name}/#{sub_provider}/callback"
         path
-      end
-
-      def path_prefix
-        options[:path_prefix] || OmniAuth.config.path_prefix
       end
 
       def request_phase
@@ -105,9 +79,9 @@ module OmniAuth
       end
 
       def callback_phase
-        #if request.params['error'] || request.params['error_reason']
-        #  raise CallbackError.new(request.params['error'], request.params['error_description'] || request.params['error_reason'], request.params['error_uri'])
-        #end
+        if request.params['error'] || request.params['error_reason']
+          raise CallbackError.new(request.params['error'], request.params['error_description'] || request.params['error_reason'], request.params['error_uri'])
+        end
         if !options.provider_ignores_state && !verified_state?
           raise CallbackError.new(nil, :csrf_detected)
         end
@@ -120,7 +94,6 @@ module OmniAuth
         session.delete('omniauth.state')
         call_app!
 
-      #rescue ::Oauthio::Error, CallbackError => e
       rescue CallbackError => e
         fail!(:invalid_credentials, e)
       rescue ::MultiJson::DecodeError => e
