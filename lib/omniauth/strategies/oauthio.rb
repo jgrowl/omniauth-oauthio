@@ -57,14 +57,9 @@ module OmniAuth
       end
 
       def sub_provider
-        test = request.path.split("#{path_prefix}/#{name}/").last
-        slashes = test.split('/')
-        if slashes.length > 1
-          # return ''
-          return slashes.first.split('.').first
-        end
-
-        test.split('.').first
+        after_base = request.path.split("#{path_prefix}/#{name}/").last
+        slashes = after_base.split('/')
+        slashes.length > 1 ? slashes.first.split('.').first : after_base.split('.').first
       end
 
       def request_path
