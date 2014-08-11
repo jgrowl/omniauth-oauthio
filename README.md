@@ -79,6 +79,25 @@ To use with devise, in `config/initializers/devise.rb`
 config.omniauth :oauthio, ENV['OAUTHIO_PUBLIC_KEY'], ENV['OAUTHIO_SECRET_KEY']
 ```
 
+Add your devise routes in `config/routes.rb`
+
+```ruby
+devise_for :users, :skip => [:omniauth_callbacks]
+devise_scope :user do
+  match "/users/auth/:provider(/:sub_provider)",
+        constraints: { provider: /oauthio/ },
+        to: "users/omniauth_callbacks#passthru",
+        as: :omniauth_authorize,
+        via: [:get, :post]
+
+  match "/users/auth/:action(/:sub_provider)/callback",
+        constraints: { action: /oauthio/, sub_provider: /twitter|google/ },
+        to: "users/omniauth_callbacks",
+        as: :omniauth_callback,
+        via: [:get, :post]
+end
+```
+
 ### Omniauth
 
 Add an oauthio callback in `app/controllers/users/omniauth_callbacks_controller.rb`
