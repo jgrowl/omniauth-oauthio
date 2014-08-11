@@ -1,8 +1,5 @@
 module Oauthio
   class Client < ::OAuth2::Client
-    attr_reader :id, :secret, :site
-    attr_accessor :options
-    attr_writer :connection
 
     # Instantiate a new OAuth 2.0 client using the
     # Client ID and Client Secret registered to your
@@ -36,39 +33,6 @@ module Oauthio
                   :max_redirects    => 5,
                   :raise_errors     => true}.merge(_opts)
       @options[:connection_opts][:ssl] = ssl if ssl
-    end
-
-    # Set the site host
-    #
-    # @param [String] the OAuth2 provider site host
-    def site=(value)
-      @connection = nil
-      @site = value
-    end
-
-    # The Faraday connection object
-    def connection
-      @connection ||= begin
-        conn = Faraday.new(site, options[:connection_opts])
-        conn.build do |b|
-          options[:connection_build].call(b)
-        end if options[:connection_build]
-        conn
-      end
-    end
-
-    # The authorize endpoint URL of the OAuth2 provider
-    #
-    # @param [Hash] params additional query parameters
-    def authorize_url(params = nil)
-      connection.build_url(options[:authorize_url], params).to_s
-    end
-
-    # The token endpoint URL of the OAuth2 provider
-    #
-    # @param [Hash] params additional query parameters
-    def token_url(params = nil)
-      connection.build_url(options[:token_url], params).to_s
     end
 
     def me_url(provider, params = nil)
@@ -119,12 +83,12 @@ module Oauthio
           # on non-redirecting 3xx statuses, just return the response
           response
         when 400..599
-          error = Error.new(response)
+          error = OAuth2::Error.new(response)
           fail(error) if opts.fetch(:raise_errors, options[:raise_errors])
           response.error = error
           response
         else
-          error = Error.new(response)
+          error = OAuth2::Error.new(response)
           fail(error, "Unhandled status code value of #{response.status}")
       end
     end

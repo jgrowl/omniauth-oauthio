@@ -1,4 +1,3 @@
-require 'oauthio/error'
 require 'omniauth/oauthio/version'
 require 'omniauth/strategies/oauthio'
 
