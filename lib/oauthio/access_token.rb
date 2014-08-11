@@ -9,7 +9,6 @@ module Oauthio
       # @param [Hash] a hash of AccessToken property values
       # @return [AccessToken] the initalized AccessToken
       def from_hash(client, hash)
-        # new(client, hash.delete('access_token') || hash.delete(:access_token), hash)
         new(client,
             hash.delete('provider') || hash.delete(:provider),
             hash.delete('access_token') || hash.delete(:access_token),
