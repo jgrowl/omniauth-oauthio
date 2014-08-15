@@ -85,18 +85,24 @@ Add your devise routes in `config/routes.rb`
 ```ruby
 devise_for :users, :skip => [:omniauth_callbacks]
 devise_scope :user do
-  match "/users/auth/:provider(/:sub_provider)",
-        constraints: { provider: /oauthio/ },
+  match "/users/auth/:action(/:sub_action)",
+        constraints: { action: /oauthio/},
         to: "users/omniauth_callbacks#passthru",
         as: :omniauth_authorize,
         via: [:get, :post]
 
-  match "/users/auth/:action(/:sub_provider)/callback",
-        constraints: { action: /oauthio/, sub_provider: /twitter|google/ },
+  match "/users/auth/:action(/:sub_action)/callback",
+        constraints: { action: /oauthio/},
         to: "users/omniauth_callbacks",
         as: :omniauth_callback,
         via: [:get, :post]
 end
+```
+
+sub_action options are available if you would like to limit the actual providers allowed on the rails side.
+
+```ruby
+constraints: { action: /oauthio/, sub_action: /twitter|google/ }
 ```
 
 ### OAuth.io
