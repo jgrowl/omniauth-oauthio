@@ -3,14 +3,6 @@ omniauth-oauthio
 
 OAuth.io Strategy for OmniAuth
 
-# TODO
-
-Please note this strategy is still pretty experimental and is not complete
-
-1. I am using this mainly with a pure javascript/angularjs single page application that connects to a rails api, but
-there is no reason why this potentially work with a normal rails application that takes does not require javascript.
-I believe there is some missing functionality there and requires further testing.
-
 ## Installing
 
 Add to your `Gemfile`:

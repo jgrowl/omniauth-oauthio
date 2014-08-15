@@ -24,7 +24,7 @@ module Oauthio
       @site = _opts.delete(:site)
       @state = _opts.delete(:state)
       ssl = _opts.delete(:ssl)
-      @options = {:authorize_url    => '/auth',
+      @options = {:authorize_url    => '/auth/:provider',
                   :token_url        => '/auth/access_token',
                   :me_url           => '/auth/:provider/me',
                   :token_method     => :post,
@@ -36,7 +36,14 @@ module Oauthio
     end
 
     def me_url(provider, params = nil)
-      connection.build_url(options[:me_url], params).to_s.sub(/:provider/, provider)
+      connection.build_url(options[:me_url].sub(/:provider/, provider), params).to_s
+    end
+
+    # The authorize endpoint URL of the OAuth2 provider
+    #
+    # @param [Hash] params additional query parameters
+    def authorize_url(provider, params = nil)
+      connection.build_url(options[:authorize_url].sub(/:provider/, provider), params).to_s
     end
 
     # Makes a request relative to the specified site root.

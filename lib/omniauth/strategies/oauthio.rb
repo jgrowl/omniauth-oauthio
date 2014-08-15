@@ -3,6 +3,7 @@ require 'base64'
 require 'openssl'
 require 'rack/utils'
 require 'uri'
+require 'json'
 
 module OmniAuth
   module Strategies
@@ -23,15 +24,10 @@ module OmniAuth
       option :client_id, nil
       option :client_secret, nil
 
-      def client_with_provider(provider)
-        options.client_options.merge!({authorize_url: "#{options.client_options.authorization_url}/#{provider}"})
-        client
-      end
-
       def current_path
         # This might not be completely safe. I want to ensure that the current_path does not have a format at the end
         # so the .json should be removed.
-        super.split('.').first
+        super.sub(/(\.json)$/, '');
       end
 
       def sub_provider
@@ -54,18 +50,32 @@ module OmniAuth
 
       def request_phase
         params = authorize_params
+        provider = sub_provider
+
+        opts = {
+            state: params.state
+        }.to_json
+
         # We may want to skip redirecting the user if calling from a SPA that does not want to reload the page.
-        # The json option will return a json response instead of redirecting.
-        if request.path_info.include?('.json')
-          json = {state: session['omniauth.state']}.to_json
-          return Rack::Response.new(json, 200, 'content-type' => 'application/json').finish
+        if request.path_info =~ /\.json$/
+          return Rack::Response.new(opts, 200, 'content-type' => 'application/json').finish
         end
 
-        # TODO: Check the redirect url.
-        provider = params[:provider]
-        params = params.except(:provider)
-        redirect_url = client_with_provider(provider).auth_code.authorize_url({:redirect_uri => callback_url}.merge(params))
-        redirect redirect_url
+        redirect client.auth_code.authorize_url(provider, {:redirect_uri => callback_url_with_state(params.state)}.merge({opts: opts}))
+      end
+
+
+      # note: the callback phase should be the same regardless!
+      #
+      # The request phase though needs to have multiple options
+      # 1. take care of everything the js-sdk does.
+      # 2. partial control where we can get the state to pass to the js-sdk.
+
+      def callback_url_with_state(state)
+        uri = URI.parse(callback_url)
+        new_query_ar = URI.decode_www_form(uri.query || '') << ['state', state]
+        uri.query = URI.encode_www_form(new_query_ar)
+        uri.to_s
       end
 
       def auth_hash
@@ -79,21 +89,35 @@ module OmniAuth
       end
 
       def callback_phase
-        if request.params['error'] || request.params['error_reason']
-          raise CallbackError.new(request.params['error'], request.params['error_description'] || request.params['error_reason'], request.params['error_uri'])
+        if !request.params['code']
+          # TODO: Is there an option we can pass to OAuth.io to prevent it from putting the code in the hash part of the url?
+          # Currently we to parse the hash to get the code and then do an additional redirect.
+          html = '<!DOCTYPE html>
+                    <html><head><script>(function() {
+            "use strict";
+            var hash = document.location.hash;
+            var data = JSON.parse(decodeURIComponent(hash.split("=")[1]));
+            var code = data.data.code
+            document.location.href = document.location.origin + document.location.pathname + document.location.search + "&code=" + code
+            //document.location.href = document.location.href + "&code=" + code
+          })();</script></head><body></body></html>'
+          return Rack::Response.new(html, 200).finish
         end
-        if !options.provider_ignores_state && !verified_state?
-          raise CallbackError.new(nil, :csrf_detected)
+
+        error = request.params['error_reason'] || request.params['error']
+        if error
+          fail!(error, CallbackError.new(request.params['error'], request.params['error_description'] || request.params['error_reason'], request.params['error_uri']))
+        elsif !options.provider_ignores_state && !verified_state?
+          fail!(:csrf_detected, CallbackError.new(:csrf_detected, 'CSRF detected'))
+        else
+          self.access_token = build_access_token
+          self.access_token = access_token.refresh! if access_token.expired?
+
+          env['omniauth.auth'] = auth_hash
+          # Delete the omniauth.state after we have verified all requests
+          session.delete('omniauth.state')
+          call_app!
         end
-
-        self.access_token = build_access_token
-        self.access_token = access_token.refresh! if access_token.expired?
-
-        env['omniauth.auth'] = auth_hash
-        # Delete the omniauth.state after we have verified all requests
-        session.delete('omniauth.state')
-        call_app!
-
       rescue CallbackError => e
         fail!(:invalid_credentials, e)
       rescue ::MultiJson::DecodeError => e
@@ -105,7 +129,6 @@ module OmniAuth
       end
 
       protected
-      # Client should only be access via client_with_provider
       def client
         state = session['omniauth.state']
         options.client_options[:state] = state
@@ -120,7 +143,4 @@ module OmniAuth
     end
   end
 end
-
-
-
 

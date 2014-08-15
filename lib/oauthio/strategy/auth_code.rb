@@ -5,6 +5,13 @@ module Oauthio
         @client = client
       end
 
+      # The authorization URL endpoint of the provider
+      #
+      # @param [Hash] params additional query parameters for the URL
+      def authorize_url(provider, params = {})
+        @client.authorize_url(provider, authorize_params.merge(params))
+      end
+
       # The required query parameters for the authorize URL
       #
       # @param [Hash] params additional query parameters
