@@ -8,16 +8,61 @@ OAuth.io Strategy for OmniAuth
 Add to your `Gemfile`:
 
 ```ruby
-gem 'omniauth-oauthio', path: 'https://github.com/jgrowl/omniauth-oauthio.git'
+gem 'omniauth-oauthio', '~> 0.2.0'
 ```
 
 Then `bundle install`.
 
 ## Usage
 
-`OmniAuth::Strategies::Oauthio` is simply a Rack middleware. Read the OmniAuth docs for detailed instructions: https://github.com/intridea/omniauth.
+The following steps on the front-end need to occur:
 
-Here's a quick example, adding the middleware to a Rails app in `config/initializers/omniauth.rb`:
+1. Initialize the OAuth public key.
+
+2. Perform a request to initiate the request_phase (/auth/oauthio/:provider), using the .json option for SPA (This is to get a state string from the server).
+
+3. Optionally, use OAuth.io's javascript api to initiate a popup or a redirect (Passing along the state from step 2).
+
+4. Perform a request to initiate callback_phase (/auth/oauthio/:provider/callback) (Passing along the state and code received in step 3).
+
+For example:
+
+```javascript
+OAuth.initialize('YOUR_PUBLIC_KEY');
+        
+var selectedProvider = $('#provider').val();
+var type = $('#type').val();
+
+$.get("/auth/oauthio/" + selectedProvider + ".json").done(function(data){
+  var state = data.state
+  if (type == 'popup') {
+    OAuth.popup(selectedProvider, {'state': state})
+        .done(function(result) {
+          //use result.access_token in your API request
+          //or use result.get|post|put|del|patch|me methods (see below)
+          result.me().done(function(me){
+            $('#me').html(JSON.stringify(me));
+            $.post("/auth/oauthio/" + selectedProvider + "/callback.json", {'state': state, 'code': result.code})
+              .done(function(r){
+                $('#results').html(JSON.stringify(r));
+              });
+          });
+        })
+        .fail(function (err) {
+          //handle error with err
+          console.log(err);
+          $('#results').html(err.message)
+        });
+  } else if (type == 'redirect') {
+    OAuth.redirect(selectedProvider, {'state': state}, '/client-side?provider=' + selectedProvider + '&state=' + state);
+  }
+```
+
+## Configuring
+
+### Rails
+
+Set the path_prefix. In `config/initializers/omniauth.rb`:
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
@@ -27,44 +72,8 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 end
 ```
 
-The following steps on the front-end need to occur:
+#### Devise
 
-1. Initialize the OAuth public key.
-
-2. Perform get request to initiate the request_phase, using the .json option for SPA (This is to get a state string from the server).
-
-3. Use OAuth.io's javascript api to initiate a popup (Passing along the state from step 2).
-
-4. Perform get request to initiate callback_phase (Passing along the state and code received in step 3).
-
-For example:  (NOTE: I need to update this. I am currently using dart in my test app)
-
-```coffeescript
-OAuth.initialize('YOUR_PUBLIC_KEY')
-
-$.get "http://localhost:3000/users/auth/oauthio.json", (data) ->
-    @options = data
-
-OAuth.popup provider, @options, (err, res) ->
-    if (err)
-      console.log err
-    else
-      $.get "http://localhost:3000/users/auth/oauthio/twitter/callback.json?state=@options.state&code=@options.code", (data) ->
-        console.log(data)
-        # Perform additional login steps
-```
-
-## Configuring
-
-### OAuth.io
-
-Be sure to enable the Server-side (code) option on any providers you want to use with this strategy.
-
-### Custom Callback URL/Path
-
-You can set a custom `callback_url` or `callback_path` option to override the default value. See [OmniAuth::Strategy#callback_url](https://github.com/intridea/omniauth/blob/master/lib/omniauth/strategy.rb#L411) for more details on the default.
-
-### Devise
 To use with devise, in `config/initializers/devise.rb`
 
 ```ruby
@@ -89,6 +98,10 @@ devise_scope :user do
         via: [:get, :post]
 end
 ```
+
+### OAuth.io
+
+Be sure to enable the Server-side (code) option on any providers you want to use with this strategy.
 
 ### Omniauth
 
