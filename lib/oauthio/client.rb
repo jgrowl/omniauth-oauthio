@@ -17,7 +17,7 @@ module Oauthio
     # @option opts [Boolean] :raise_errors (true) whether or not to raise an OAuth2::Error
     #  on responses with 400+ status codes
     # @yield [builder] The Faraday connection builder
-    def initialize(client_id, client_secret, opts = {}, &block)
+    def initialize(client_id, client_secret, opts={}, &block)
       _opts = opts.dup
       @id = client_id
       @secret = client_secret
@@ -36,14 +36,16 @@ module Oauthio
     end
 
     def me_url(provider, params = nil)
-      connection.build_url(options[:me_url].sub(/:provider/, provider), params).to_s
+      connection.build_url(options[:me_url].sub(/:provider/, provider), params).
+                 to_s
     end
 
     # The authorize endpoint URL of the OAuth2 provider
     #
     # @param [Hash] params additional query parameters
     def authorize_url(provider, params = nil)
-      connection.build_url(options[:authorize_url].sub(/:provider/, provider), params).to_s
+      connection.build_url(options[:authorize_url].sub(/:provider/, provider),
+                           params).to_s
     end
 
     # Makes a request relative to the specified site root.
@@ -61,9 +63,10 @@ module Oauthio
     def request(verb, url, opts = {}) # rubocop:disable CyclomaticComplexity, MethodLength
       url = connection.build_url(url, opts[:params]).to_s
 
-      response = connection.run_request(verb, url, opts[:body], opts[:headers]) do |req|
-        yield(req) if block_given?
-      end
+      response =
+        connection.run_request(verb, url, opts[:body], opts[:headers]) do |req|
+          yield(req) if block_given?
+        end
 
       # Only really care about the status and the actual return body.
       # Oauth2 strategy wraps the response in a Response object that handles parsing and whatnot. That is great when
@@ -74,29 +77,29 @@ module Oauthio
       response = JSON.parse(response.body)
       response['status'] = status
       response['headers'] = headers
-      response = Hashie::Mash.new response
+      response = Hashie::Mash.new(response)
 
       case response.status
-        when 301, 302, 303, 307
-          opts[:redirect_count] ||= 0
-          opts[:redirect_count] += 1
-          return response if opts[:redirect_count] > options[:max_redirects]
-          if response.status == 303
-            verb = :get
-            opts.delete(:body)
-          end
-          request(verb, response.headers['location'], opts)
-        when 200..299, 300..399
-          # on non-redirecting 3xx statuses, just return the response
-          response
-        when 400..599
-          error = OAuth2::Error.new(response)
-          fail(error) if opts.fetch(:raise_errors, options[:raise_errors])
-          response.error = error
-          response
-        else
-          error = OAuth2::Error.new(response)
-          fail(error, "Unhandled status code value of #{response.status}")
+      when 301, 302, 303, 307
+        opts[:redirect_count] ||= 0
+        opts[:redirect_count] += 1
+        return response if opts[:redirect_count] > options[:max_redirects]
+        if response.status == 303
+          verb = :get
+          opts.delete(:body)
+        end
+        request(verb, response.headers['location'], opts)
+      when 200..299, 300..399
+        # on non-redirecting 3xx statuses, just return the response
+        response
+      when 400..599
+        error = OAuth2::Error.new(response)
+        fail(error) if opts.fetch(:raise_errors, options[:raise_errors])
+        response.error = error
+        response
+      else
+        error = OAuth2::Error.new(response)
+        fail(error, "Unhandled status code value of #{response.status}")
       end
     end
 
@@ -106,12 +109,13 @@ module Oauthio
     # @param [Hash] access token options, to pass to the AccessToken object
     # @param [Class] class of access token for easier subclassing OAuth2::AccessToken
     # @return [AccessToken] the initalized AccessToken
-    def get_token(params, access_token_opts = {}, access_token_class = AccessToken)
-      opts = {:raise_errors => options[:raise_errors], :parse => params.delete(:parse)}
+    def get_token(params, access_token_opts={}, access_token_class=AccessToken)
+      opts = {:raise_errors => options[:raise_errors],
+              :parse => params.delete(:parse)}
       if options[:token_method] == :post
         headers = params.delete(:headers)
         opts[:body] = params
-        opts[:headers] =  {'Content-Type' => 'application/x-www-form-urlencoded'}
+        opts[:headers] = {'Content-Type' => 'application/x-www-form-urlencoded'}
         opts[:headers].merge!(headers) if headers
       else
         opts[:params] = params
@@ -120,14 +124,16 @@ module Oauthio
 
       # Verify state in the response matches the one in the session
       if response.state != @state
-        raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil, :csrf_detected);
+        raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil,
+                                                                :csrf_detected)
       end
 
       # error = Error.new(response)
       # fail(error) if options[:raise_errors] && !(response.parsed.is_a?(Hash) && response.parsed['access_token'])
 
-      provider_client = ::Oauthio::Client.new(@id, @secret, { :site => @site })
-      access_token_class.from_hash(provider_client, response.merge(access_token_opts))
+      provider_client = ::Oauthio::Client.new(@id, @secret, {:site => @site})
+      access_token_class.from_hash(provider_client,
+                                   response.merge(access_token_opts))
     end
 
     # The Authorization Code strategy

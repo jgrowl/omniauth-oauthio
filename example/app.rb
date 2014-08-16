@@ -1,5 +1,5 @@
 require 'sinatra'
-require "sinatra/reloader"
+require 'sinatra/reloader'
 require 'yaml'
 
 # configure sinatra
@@ -7,7 +7,7 @@ set :run, false
 set :raise_errors, true
 
 # setup logging to file
-log = File.new("app.log", "a+")
+log = File.new('app.log', 'a+')
 $stdout.reopen(log)
 $stderr.reopen(log)
 $stderr.sync = true
@@ -15,15 +15,15 @@ $stdout.sync = true
 
 # server-side flow
 get '/server-side/:provider' do
-  # NOTE: You would just hit this endpoint directly from the browser in a real app. The redirect is just here to
-  #       explicit declare this server-side flow.
+  # NOTE: You would just hit this endpoint directly from the browser in a real
+  # app. The redirect is just here to explicitly declare this server-side flow.
   redirect "/auth/oauthio/#{params[:provider]}"
 end
 
 # client-side flow
 get '/client-side' do
   content_type 'text/html'
-  <<-END
+  <<-END.gsub(/^\s{4}/, '')
     <html>
     <head>
       <title>Client-side Flow Example</title>
@@ -136,7 +136,7 @@ get '/client-side' do
   END
 end
 
-def self.get_or_post(url,&block)
+def self.get_or_post(url, &block)
   get(url,&block)
   post(url,&block)
 end
