@@ -37,7 +37,6 @@ module Oauthio
         params = {'code' => code}.merge(client_params).merge(params)
         @client.get_token(params, opts)
       end
-
     end
   end
 end

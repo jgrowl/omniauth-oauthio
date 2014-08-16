@@ -18,21 +18,19 @@ module Oauthio
       end
 
       def info
-        prune!({
-                   'name' => _raw_info['name'],
-                   'alias' => _raw_info['alias'],
-                   'bio' => _raw_info['bio'],
-                   'avatar' => _raw_info['avatar'],
-                   'firstname' => _raw_info['firstname'],
-                   'lastname' => _raw_info['lastname'],
-                   'gender' => _raw_info['gender'],
-                   'location' => _raw_info['location'],
-                   'local' => _raw_info['local'],
-                   'company' => _raw_info['company'],
-                   'occupation' => _raw_info['occupation'],
-                   'language' => _raw_info['language'],
-                   'birthdate' => _raw_info['birthdate'],
-               })
+        prune!({'name' => _raw_info['name'],
+                'alias' => _raw_info['alias'],
+                'bio' => _raw_info['bio'],
+                'avatar' => _raw_info['avatar'],
+                'firstname' => _raw_info['firstname'],
+                'lastname' => _raw_info['lastname'],
+                'gender' => _raw_info['gender'],
+                'location' => _raw_info['location'],
+                'local' => _raw_info['local'],
+                'company' => _raw_info['company'],
+                'occupation' => _raw_info['occupation'],
+                'language' => _raw_info['language'],
+                'birthdate' => _raw_info['birthdate']})
       end
 
       def extra
@@ -47,7 +45,7 @@ module Oauthio
       end
 
       def raw_info
-        @raw_info ||= _raw_info['raw']  || {}
+        @raw_info ||= _raw_info['raw'] || {}
       end
 
       def info_options
@@ -64,11 +62,21 @@ module Oauthio
 
       def credentials
         hash = {}
-        hash.merge!('token' => @access_token.token) if !@access_token.token.empty?
-        hash.merge!('oauth_token' => @access_token.oauth_token,
-                    'oauth_token_secret' => @access_token.oauth_token_secret) if !@access_token.oauth_token.empty? && !@access_token.oauth_token_secret.empty?
-        hash.merge!('refresh_token' => @access_token.refresh_token) if @access_token.expires? && @access_token.refresh_token
-        hash.merge!('expires_at' => @access_token.expires_at) if @access_token.expires?
+        unless @access_token.token.empty?
+          hash.merge!('token' => @access_token.token)
+        end
+        has_oauth_token = !@access_token.oauth_token.empty?
+        has_oauth_token_secret = !@access_token.oauth_token_secret.empty?
+        if has_oauth_token && has_oauth_token_secret
+          hash.merge!('oauth_token' => @access_token.oauth_token,
+                      'oauth_token_secret' => @access_token.oauth_token_secret)
+        end
+        if @access_token.expires? && @access_token.refresh_token
+          hash.merge!('refresh_token' => @access_token.refresh_token)
+        end
+        if @access_token.expires?
+          hash.merge!('expires_at' => @access_token.expires_at)
+        end
         hash.merge!('expires' => @access_token.expires?)
         hash
       end
