@@ -64,13 +64,6 @@ module OmniAuth
         redirect client.auth_code.authorize_url(provider, {:redirect_uri => callback_url_with_state(params.state)}.merge({opts: opts}))
       end
 
-
-      # note: the callback phase should be the same regardless!
-      #
-      # The request phase though needs to have multiple options
-      # 1. take care of everything the js-sdk does.
-      # 2. partial control where we can get the state to pass to the js-sdk.
-
       def callback_url_with_state(state)
         uri = URI.parse(callback_url)
         new_query_ar = URI.decode_www_form(uri.query || '') << ['state', state]
