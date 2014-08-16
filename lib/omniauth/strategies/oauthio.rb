@@ -89,7 +89,7 @@ module OmniAuth
       end
 
       def callback_phase
-        if !request.params['code']
+        unless request.params['code']
           # TODO: Is there an option we can pass to OAuth.io to prevent it from putting the code in the hash part of the url?
           # Currently we to parse the hash to get the code and then do an additional redirect.
           html = '<!DOCTYPE html>
@@ -97,9 +97,8 @@ module OmniAuth
             "use strict";
             var hash = document.location.hash;
             var data = JSON.parse(decodeURIComponent(hash.split("=")[1]));
-            var code = data.data.code
-            document.location.href = document.location.origin + document.location.pathname + document.location.search + "&code=" + code
-            //document.location.href = document.location.href + "&code=" + code
+            var code = data.data.code;
+            document.location.href = document.location.origin + document.location.pathname + document.location.search + "&code=" + code;
           })();</script></head><body></body></html>'
           return Rack::Response.new(html, 200).finish
         end
