@@ -1,7 +1,7 @@
 omniauth-oauthio
 =================
 
-OAuth.io Strategy for OmniAuth
+[OAuth.io](https://oauth.io/) Strategy for OmniAuth
 
 ## Installing
 
@@ -19,17 +19,17 @@ The following steps on the front-end need to occur:
 
 1. Initialize the OAuth public key.
 
-2. Perform a request to initiate the request_phase (/auth/oauthio/:provider), using the .json option for SPA (This is to get a state string from the server).
+2. Perform a request to initiate the request_phase `/auth/oauthio/:provider`, using the .json option for a single-page application (this is to get a state string from the server).
 
-3. Optionally, use OAuth.io's javascript api to initiate a popup or a redirect (Passing along the state from step 2).
+3. Optionally, use OAuth.io's JavaScript API to initiate a popup or a redirect, passing along the state from step 2.
 
-4. Perform a request to initiate callback_phase (/auth/oauthio/:provider/callback) (Passing along the state and code received in step 3).
+4. Perform a request to initiate callback_phase `/auth/oauthio/:provider/callback`, passing along the state and code received in step 3.
 
 For example:
 
 ```javascript
 OAuth.initialize('YOUR_PUBLIC_KEY');
-        
+
 var selectedProvider = $('#provider').val();
 var type = $('#type').val();
 
@@ -62,7 +62,7 @@ $.get("/auth/oauthio/" + selectedProvider + ".json").done(function(data){
 
 ### Rails
 
-Set the path_prefix. In `config/initializers/omniauth.rb`:
+Set `path_prefix` in `config/initializers/omniauth.rb`:
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
@@ -74,75 +74,64 @@ end
 
 #### Devise
 
-To use with devise, in `config/initializers/devise.rb`
+To use with [Devise](https://github.com/plataformatec/devise), in `config/initializers/devise.rb`
 
 ```ruby
 config.omniauth :oauthio, ENV['OAUTHIO_PUBLIC_KEY'], ENV['OAUTHIO_SECRET_KEY']
 ```
 
-Add your devise routes in `config/routes.rb`
+Add your Devise routes in `config/routes.rb`:
 
 ```ruby
 devise_for :users, :skip => [:omniauth_callbacks]
 devise_scope :user do
-  match "/users/auth/:action(/:sub_action)",
-        constraints: { action: /oauthio/},
-        to: "users/omniauth_callbacks#passthru",
-        as: :omniauth_authorize,
-        via: [:get, :post]
+  match '/users/auth/:action(/:sub_action)',
+        constraints: {:action => /oauthio/},
+        to: 'users/omniauth_callbacks#passthru',
+        as: :omniauth_authorize, via: [:get, :post]
 
-  match "/users/auth/:action(/:sub_action)/callback",
-        constraints: { action: /oauthio/},
-        to: "users/omniauth_callbacks",
-        as: :omniauth_callback,
-        via: [:get, :post]
+  match '/users/auth/:action(/:sub_action)/callback',
+        constraints: {:action => /oauthio/},
+        to: 'users/omniauth_callbacks',
+        as: :omniauth_callback, via: [:get, :post]
 end
 ```
 
-sub_action options are available if you would like to limit the actual providers allowed on the rails side.
+`sub_action` options are available if you would like to limit the actual providers allowed on the Rails side:
 
 ```ruby
-constraints: { action: /oauthio/, sub_action: /twitter|google/ }
+constraints: {:action => /oauthio/, :sub_action => /twitter|google/}
 ```
 
 ### OAuth.io
 
-Be sure to enable the Server-side (code) option on any providers you want to use with this strategy.
+Be sure to enable the server-side (code) option on any providers you want to use with this strategy.
 
 ### Omniauth
 
-Add an oauthio callback in `app/controllers/users/omniauth_callbacks_controller.rb`
+Add an `oauthio` callback in `app/controllers/users/omniauth_callbacks_controller.rb`:
 
 ```ruby
-
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   def oauthio
-
-    # TODO: Do your login logic here! ie. look up the user by the uid or create one if it does not already exist!
+    # TODO: Do your login logic here!
+    # e.g., look up the user by the uid or create one if it does not already
+    # exist!
 
     respond_to do |format|
-      format.json  { render json: auth_hash}
+      format.json  { render json: request.env['omniauth.auth'] }
     end
   end
-
-  def auth_hash
-    request.env['omniauth.auth']
-  end
-
 end
 ```
 
-Create the method used in your callback in your `user.rb`
+# Understanding server-side flow
 
-# Understanding server side flow
-
-oauth.io describes how everything works in their [security](https://oauth.io/docs/security) section.
+OAuth.io describes how everything works in [their security section](https://oauth.io/docs/security):
 
 ![alt text](https://oauth.io/img/server-side-flow.png "Server side flow")
 
-
 ## Credit
 
-https://oauth.io/
-
-https://github.com/mkdynamic/omniauth-facebook
+- [OAuth.io](https://oauth.io/)
+- [omniauth-facebook](https://github.com/mkdynamic/omniauth-facebook)
