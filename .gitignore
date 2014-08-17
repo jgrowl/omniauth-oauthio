@@ -9,6 +9,5 @@ tmp
 bin
 .idea
 *.iml
-example/Gemfile.lock
 example/app.log
 /coverage

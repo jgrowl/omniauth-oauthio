@@ -125,11 +125,21 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 end
 ```
 
-# Understanding server-side flow
+## Understanding server-side flow
 
 OAuth.io describes how everything works in [their security section](https://oauth.io/docs/security):
 
 ![alt text](https://oauth.io/img/server-side-flow.png "Server side flow")
+
+## Running Sample Application
+
+In `example/` there is a simple Sinatra app that uses this gem. To start it:
+
+    cd example
+    bundle
+    rackup
+
+Then visit [http://localhost:9292](http://localhost:9292) in your browser.
 
 ## Credit
 

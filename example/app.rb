@@ -1,5 +1,4 @@
 require 'sinatra'
-require 'sinatra/reloader'
 require 'yaml'
 
 # configure sinatra
@@ -137,8 +136,8 @@ get '/client-side' do
 end
 
 def self.get_or_post(url, &block)
-  get(url,&block)
-  post(url,&block)
+  get(url, &block)
+  post(url, &block)
 end
 
 get_or_post '/auth/:provider/:sub_provider/callback.?:format?' do
@@ -149,4 +148,8 @@ end
 get '/auth/failure' do
   content_type 'application/json'
   MultiJson.encode(request.env)
+end
+
+get '/' do
+  redirect '/client-side'
 end

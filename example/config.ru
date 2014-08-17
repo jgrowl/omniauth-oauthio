@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'omniauth-oauthio'
-require './app.rb'
+require 'sinatra'
+require_relative 'app.rb'
 
 use Rack::Session::Cookie, :secret => 'abc123'
 
