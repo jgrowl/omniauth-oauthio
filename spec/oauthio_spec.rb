@@ -17,9 +17,11 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
       }
     })
   }
+  let(:path) { "/auth/oauthio/#{provider}" }
   let(:request) {
     mock = double('Request', :params => {}, :cookies => {}, :env => env)
-    allow(mock).to receive(:path).and_return("/auth/oauthio/#{provider}")
+    allow(mock).to receive(:path).and_return(path)
+    allow(mock).to receive(:path_info).and_return(path)
     mock
   }
   let(:app) { ->(env) { [200, {}, ['Hello.']] } }
@@ -54,6 +56,47 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
 
       it 'returns specified request_path' do
         expect(subject.request_path).to eq(options[:request_path])
+      end
+    end
+  end
+
+  describe 'callback_path' do
+    context 'without callback_path or request_path options' do
+      it 'returns a callback URL for the provider' do
+        expect(subject.callback_path).
+            to eq("/auth/oauthio/#{provider}/callback")
+      end
+    end
+
+    context 'with string request_path option' do
+      let(:options) { {:request_path => '/some/neat/url'} }
+
+      it 'returns specified request_path' do
+        expect(subject.callback_path).to eq(options[:request_path])
+      end
+    end
+
+    context 'with lambda request_path option' do
+      let(:options) { {:request_path => ->(env) { '/really/cool' }} }
+
+      it 'returns result of specified request_path function' do
+        expect(subject.callback_path).to eq('/really/cool')
+      end
+    end
+
+    context 'with lambda callback_path option' do
+      let(:options) { {:callback_path => ->(env) { 'something truthy' }} }
+
+      it 'returns current path' do
+        expect(subject.callback_path).to eq(path)
+      end
+    end
+
+    context 'with string callback_path option' do
+      let(:options) { {:callback_path => "/users/auth/#{provider}/callback"} }
+
+      it 'returns specified callback_path' do
+        expect(subject.callback_path).to eq(options[:callback_path])
       end
     end
   end
