@@ -3,20 +3,20 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
   let(:scheme) { 'https' }
   let(:path) { "/auth/oauthio/#{provider}" }
   let(:url) { "#{scheme}://example.com#{path}" }
+  let(:client_id) { '123' }
+  let(:client_secret) { '53cr37' }
+  let(:options) { {} }
+  let(:raw_info) {
+    {'id' => '1234567', 'email' => 'j.doe@example.com', 'name' => 'Jane Doe',
+     'gender' => 'female'}
+  }
   let(:env) {
     OmniAuth::AuthHash.new({
       'omniauth.auth' => {
         'provider' => provider,
         'uid' => '1234',
         'credentials' => {'token' => 'abcdefg'},
-        'extra' => {
-          'raw_info' => {
-            'id' => '1234567',
-            'email' => 'j.doe@example.com',
-            'name' => 'Jane Doe',
-            'gender' => 'female'
-          }
-        }
+        'extra' => {'raw_info' => raw_info}
       },
       'REQUEST_METHOD' => 'GET',
       'PATH_INFO' => path,
@@ -33,9 +33,6 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
     mock
   }
   let(:app) { ->(env) { [200, {}, ['Hello.']] } }
-  let(:client_id) { '123' }
-  let(:client_secret) { '53cr37' }
-  let(:options) { {} }
   subject {
     args = [app, client_id, client_secret, options]
     OmniAuth::Strategies::Oauthio.new(*args).tap do |strategy|
@@ -116,6 +113,31 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
     it 'returns full URL with specified state' do
       expect(subject.callback_url_with_state(state)).
           to eq("#{url}/callback?state=#{state}")
+    end
+  end
+
+  describe 'auth_hash' do
+    let(:client) { Oauthio::Client.new(client_id, client_secret, {}) }
+    let(:access_token) {
+      token = Oauthio::AccessToken.from_hash(client, {:provider => provider})
+      allow(token).to receive(:request).and_return({'data' => raw_info})
+      token
+    }
+    before do
+      subject.call!(env)
+      allow(subject).to receive(:access_token).and_return(access_token)
+    end
+
+    it 'returns a hash' do
+      expect(subject.auth_hash).to be_an_instance_of(OmniAuth::AuthHash)
+    end
+
+    it 'includes specified provider' do
+      expect(subject.auth_hash['provider']).to eq(provider)
+    end
+
+    it 'has user info from provider' do
+      expect(subject.auth_hash.info).to eq(raw_info)
     end
   end
 end

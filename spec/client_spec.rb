@@ -1,6 +1,8 @@
 RSpec.describe Oauthio::Client do
   let(:site) { 'https://oauth.io' }
-  let(:client) { Oauthio::Client.new('123', '53cr37', options) }
+  let(:client_id) { '123' }
+  let(:client_secret) { '53cr37' }
+  let(:client) { Oauthio::Client.new(client_id, client_secret, options) }
 
   describe 'me_url' do
     let(:provider) { 'google' }
