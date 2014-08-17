@@ -18,19 +18,7 @@ module Oauthio
       end
 
       def info
-        prune!({'name' => _raw_info['name'],
-                'alias' => _raw_info['alias'],
-                'bio' => _raw_info['bio'],
-                'avatar' => _raw_info['avatar'],
-                'firstname' => _raw_info['firstname'],
-                'lastname' => _raw_info['lastname'],
-                'gender' => _raw_info['gender'],
-                'location' => _raw_info['location'],
-                'local' => _raw_info['local'],
-                'company' => _raw_info['company'],
-                'occupation' => _raw_info['occupation'],
-                'language' => _raw_info['language'],
-                'birthdate' => _raw_info['birthdate']})
+        prune!(_raw_info)
       end
 
       def extra
