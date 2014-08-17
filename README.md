@@ -8,7 +8,7 @@ omniauth-oauthio
 Add to your `Gemfile`:
 
 ```ruby
-gem 'omniauth-oauthio', '~> 0.2.0'
+gem 'omniauth-oauthio', '~> 0.2.1'
 ```
 
 Then `bundle install`.
