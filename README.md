@@ -125,11 +125,23 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 end
 ```
 
-# Understanding server-side flow
+## Understanding server-side flow
 
 OAuth.io describes how everything works in [their security section](https://oauth.io/docs/security):
 
 ![alt text](https://oauth.io/img/server-side-flow.png "Server side flow")
+
+## Running Sample Application
+
+In `example/` there is a simple Sinatra app that uses this gem. You can test Facebook, Twitter, and Google authentication with it. For these providers to work, you'll have to set them up on the provider website, e.g., [Facebook Developers](https://developers.facebook.com), as well as in OAuth.io.
+
+To start the sample app:
+
+    cd example
+    bundle
+    OAUTHIO_PUBLIC_KEY=yourkey OAUTHIO_PRIVATE_KEY=yourprivatekey rackup
+
+Then visit [http://localhost:9292](http://localhost:9292) in your browser.
 
 ## Credit
 

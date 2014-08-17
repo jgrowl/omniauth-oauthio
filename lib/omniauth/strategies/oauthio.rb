@@ -30,6 +30,7 @@ module OmniAuth
       end
 
       def sub_provider
+        # e.g., /auth/oauthio/twitter
         after_base = request.path.split("#{path_prefix}/#{name}/").last
         slashes = after_base.split('/')
         str = slashes.length > 1 ? slashes.first : after_base
@@ -45,9 +46,9 @@ module OmniAuth
       end
 
       def callback_path
-        callback = options[:callback_path]
-        path = callback if callback.is_a?(String)
-        if callback.respond_to?(:call) && callback.call(env)
+        callback_option = options[:callback_path]
+        path = callback_option if callback_option.is_a?(String)
+        if callback_option.respond_to?(:call) && callback_option.call(env)
           path ||= current_path
         end
         path ||= custom_path(:request_path)

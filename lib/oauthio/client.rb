@@ -35,7 +35,7 @@ module Oauthio
       @options[:connection_opts][:ssl] = ssl if ssl
     end
 
-    def me_url(provider, params = nil)
+    def me_url(provider, params=nil)
       connection.build_url(options[:me_url].sub(/:provider/, provider), params).
                  to_s
     end
@@ -43,7 +43,7 @@ module Oauthio
     # The authorize endpoint URL of the OAuth2 provider
     #
     # @param [Hash] params additional query parameters
-    def authorize_url(provider, params = nil)
+    def authorize_url(provider, params=nil)
       connection.build_url(options[:authorize_url].sub(/:provider/, provider),
                            params).to_s
     end
@@ -60,7 +60,7 @@ module Oauthio
     #   code response for this request.  Will default to client option
     # @option opts [Symbol] :parse @see Response::initialize
     # @yield [req] The Faraday request
-    def request(verb, url, opts = {}) # rubocop:disable CyclomaticComplexity, MethodLength
+    def request(verb, url, opts={}) # rubocop:disable CyclomaticComplexity, MethodLength
       url = connection.build_url(url, opts[:params]).to_s
 
       response =
