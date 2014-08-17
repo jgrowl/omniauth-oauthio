@@ -3,6 +3,8 @@ omniauth-oauthio
 
 [OAuth.io](https://oauth.io/) Strategy for OmniAuth
 
+[![Gem Version](https://badge.fury.io/rb/omniauth-oauthio.svg)](http://badge.fury.io/rb/omniauth-oauthio)
+
 ## Installing
 
 Add to your `Gemfile`:
