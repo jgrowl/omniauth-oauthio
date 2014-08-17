@@ -137,7 +137,8 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
     end
 
     it 'has user info from provider' do
-      expect(subject.auth_hash.info).to eq(raw_info)
+      expect(subject.auth_hash.info['name']).to eq(raw_info['name'])
+      expect(subject.auth_hash.info['email']).to eq(raw_info['email'])
     end
   end
 end

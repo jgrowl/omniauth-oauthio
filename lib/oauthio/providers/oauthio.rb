@@ -21,11 +21,16 @@ module Oauthio
         # Map OAuth.io info to standard OmniAuth keys, e.g., OAuth.io's alias
         # becomes nickname.
         # See https://github.com/intridea/omniauth/wiki/Auth-Hash-Schema
-        prune!(_raw_info.merge({'nickname' => _raw_info['alias'],
-                                'description' => _raw_info['bio'],
-                                'image' => _raw_info['avatar'],
-                                'first_name' => _raw_info['firstname'],
-                                'last_name' => _raw_info['lastname']}))
+        prune!({'nickname' => _raw_info['alias'],
+                'description' => _raw_info['bio'],
+                'image' => _raw_info['avatar'],
+                'first_name' => _raw_info['firstname'],
+                'last_name' => _raw_info['lastname'],
+                'phone' => _raw_info['phones'],
+                'email' => _raw_info['email'],
+                'name' => _raw_info['name'],
+                'location' => _raw_info['location'],
+                'urls' => _raw_info['urls']})
       end
 
       def extra
