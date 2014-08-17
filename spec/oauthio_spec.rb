@@ -1,5 +1,8 @@
 RSpec.describe OmniAuth::Strategies::Oauthio do
   let(:provider) { 'facebook' }
+  let(:scheme) { 'https' }
+  let(:path) { "/auth/oauthio/#{provider}" }
+  let(:url) { "#{scheme}://example.com#{path}" }
   let(:env) {
     OmniAuth::AuthHash.new({
       'omniauth.auth' => {
@@ -14,14 +17,19 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
             'gender' => 'female'
           }
         }
-      }
+      },
+      'REQUEST_METHOD' => 'GET',
+      'PATH_INFO' => path,
+      'rack.session' => {},
+      'rack.input' => StringIO.new('test=true')
     })
   }
-  let(:path) { "/auth/oauthio/#{provider}" }
   let(:request) {
     mock = double('Request', :params => {}, :cookies => {}, :env => env)
     allow(mock).to receive(:path).and_return(path)
     allow(mock).to receive(:path_info).and_return(path)
+    allow(mock).to receive(:scheme).and_return(scheme)
+    allow(mock).to receive(:url).and_return(url)
     mock
   }
   let(:app) { ->(env) { [200, {}, ['Hello.']] } }
@@ -98,6 +106,16 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
       it 'returns specified callback_path' do
         expect(subject.callback_path).to eq(options[:callback_path])
       end
+    end
+  end
+
+  describe 'callback_url_with_state' do
+    let(:state) { 'cool' }
+    before { subject.call!(env) }
+
+    it 'returns full URL with specified state' do
+      expect(subject.callback_url_with_state(state)).
+          to eq("#{url}/callback?state=#{state}")
     end
   end
 end
