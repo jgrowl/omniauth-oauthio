@@ -25,7 +25,7 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
   let(:app) { ->(env) { [200, {}, ['Hello.']] } }
   let(:client_id) { '123' }
   let(:client_secret) { '53cr37' }
-  let(:options) { {:callback_path => '/auth/oauthio/done'} }
+  let(:options) { {} }
   subject {
     args = [app, client_id, client_secret, options]
     OmniAuth::Strategies::Oauthio.new(*args).tap do |strategy|
@@ -39,6 +39,22 @@ RSpec.describe OmniAuth::Strategies::Oauthio do
   describe 'sub_provider' do
     it 'extracts the OAuth provider from the request path' do
       expect(subject.sub_provider).to eq(provider)
+    end
+  end
+
+  describe 'request_path' do
+    context 'without request_path option' do
+      it 'returns path for provider' do
+        expect(subject.request_path).to eq("/auth/oauthio/#{provider}")
+      end
+    end
+
+    context 'with request_path option' do
+      let(:options) { {:request_path => '/authentication/oauthio'} }
+
+      it 'returns specified request_path' do
+        expect(subject.request_path).to eq(options[:request_path])
+      end
     end
   end
 end
