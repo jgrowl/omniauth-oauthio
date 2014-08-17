@@ -60,7 +60,7 @@ module Oauthio
     #   code response for this request.  Will default to client option
     # @option opts [Symbol] :parse @see Response::initialize
     # @yield [req] The Faraday request
-    def request(verb, url, opts = {}) # rubocop:disable CyclomaticComplexity, MethodLength
+    def request(verb, url, opts={}) # rubocop:disable CyclomaticComplexity, MethodLength
       url = connection.build_url(url, opts[:params]).to_s
 
       response =

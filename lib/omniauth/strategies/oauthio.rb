@@ -30,6 +30,7 @@ module OmniAuth
       end
 
       def sub_provider
+        # e.g., /auth/oauthio/twitter
         after_base = request.path.split("#{path_prefix}/#{name}/").last
         slashes = after_base.split('/')
         str = slashes.length > 1 ? slashes.first : after_base
