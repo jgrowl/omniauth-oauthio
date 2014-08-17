@@ -1,6 +1,5 @@
 *.gem
 .bundle
-.rspec
 /Gemfile.lock
 example/Gemfile.lock
 pkg/*
