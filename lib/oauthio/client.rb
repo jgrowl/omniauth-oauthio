@@ -23,6 +23,7 @@ module Oauthio
       @secret = client_secret
       @site = _opts.delete(:site)
       @state = _opts.delete(:state)
+      @jwt_secret = _opts.delete(:jwt_secret)
       ssl = _opts.delete(:ssl)
       @options = {:authorize_url    => '/auth/:provider',
                   :token_url        => '/auth/access_token',
@@ -122,10 +123,17 @@ module Oauthio
       end
       response = request(options[:token_method], token_url, opts)
 
-      # Verify state in the response matches the one in the session
-      if response.state != @state
-        raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil,
-                                                                :csrf_detected)
+      if @jwt_secret.nil?
+        # Verify state in the response matches the one in the session
+        if response.state != @state
+          raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil,
+                                                                  :csrf_detected)
+        end
+      else
+        if JWT.decode(response.state, @jwt_secret)[0]['state'].nil?
+          raise ::OmniAuth::Strategies::OAuth2::CallbackError.new(nil,
+                                                                  :csrf_detected)
+        end
       end
 
       # error = Error.new(response)

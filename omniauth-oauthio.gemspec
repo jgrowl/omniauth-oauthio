@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'omniauth-oauth2', '~> 1.2'
+  s.add_runtime_dependency 'jwt'
 
   s.add_development_dependency 'mocha'
   s.add_development_dependency 'rake'

@@ -10,6 +10,16 @@ module OmniAuth
     class Oauthio < OmniAuth::Strategies::OAuth2
       include OmniAuth::Strategy
 
+      def call(env)
+        unless options.jwt_secret.nil?
+          # This is kinda hacky but omniauth expects the rack.session to be set. Since we are using jwt we will not
+          # be using a session. We will just set it to an empty hash to avoid the error.
+          env['rack.session'] = {}
+        end
+
+        dup.call!(env)
+      end
+
       args [:client_id, :client_secret]
 
       # Give your strategy a name.
@@ -21,6 +31,7 @@ module OmniAuth
 
       option :client_id, nil
       option :client_secret, nil
+      option :jwt_secret, nil
 
       def current_path
         # This might not be completely safe. I want to ensure that the
@@ -54,6 +65,22 @@ module OmniAuth
         path ||= custom_path(:request_path)
         path ||= "#{path_prefix}/#{name}/#{sub_provider}/callback"
         path
+      end
+
+      def authorize_params
+        options.authorize_params[:state] = SecureRandom.hex(24)
+        params = options.authorize_params.merge(options_for('authorize'))
+        if options.jwt_secret.nil?
+          if OmniAuth.config.test_mode
+            @env ||= {}
+            @env['rack.session'] ||= {}
+          end
+          session['omniauth.state'] = params[:state]
+        else
+          jwt = JWT.encode({state: params[:state]}, options.jwt_secret)
+          params[:state] = jwt
+        end
+        params
       end
 
       def request_phase
@@ -135,10 +162,12 @@ module OmniAuth
         else
           self.access_token = build_access_token
           self.access_token = access_token.refresh! if access_token.expired?
-          env['omniauth.auth'] = auth_hash
 
-          # Delete the omniauth.state after we have verified all requests
-          session.delete('omniauth.state')
+          env['omniauth.auth'] = auth_hash
+          if options.jwt_secret.nil?
+            # Delete the omniauth.state after we have verified all requests
+            session.delete('omniauth.state')
+          end
 
           call_app!
         end
@@ -155,8 +184,13 @@ module OmniAuth
       protected
 
       def client
-        state = session['omniauth.state']
-        options.client_options[:state] = state
+        if options.jwt_secret.nil?
+          state = session['omniauth.state']
+          options.client_options[:state] = state
+        else
+          options.client_options[:jwt_secret] = options.jwt_secret
+        end
+
         ::Oauthio::Client.new(options.client_id, options.client_secret,
                               deep_symbolize(options.client_options))
       end
@@ -164,7 +198,14 @@ module OmniAuth
       def verified_state?
         state = request.params['state']
         return false if state.to_s.empty?
-        state == session['omniauth.state']
+        if options.jwt_secret.nil?
+          state == session['omniauth.state']
+        else
+          # If we send a jwt that can decode a state we know it came from the server so there is nothing we need
+          # to compare against right?
+          jwt = JWT.decode(state, options.jwt_secret)
+          !jwt[0]['state'].nil?
+        end
       end
     end
   end
