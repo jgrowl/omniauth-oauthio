@@ -10,7 +10,7 @@ omniauth-oauthio
 Add to your `Gemfile`:
 
 ```ruby
-gem 'omniauth-oauthio', '~> 0.2.1'
+gem 'omniauth-oauthio', '~> 0.2.2'
 ```
 
 Then `bundle install`.
@@ -79,7 +79,14 @@ end
 To use with [Devise](https://github.com/plataformatec/devise), in `config/initializers/devise.rb`
 
 ```ruby
-config.omniauth :oauthio, ENV['OAUTHIO_PUBLIC_KEY'], ENV['OAUTHIO_SECRET_KEY']
+config.omniauth :oauthio, Rails.application.secrets.oauthio_public_key, Rails.application.secrets.oauthio_private_key
+```
+
+Optionally, to use JWT instead of sessions, include a :jwt_secret option:
+
+```ruby
+config.omniauth :oauthio, Rails.application.secrets.oauthio_public_key, Rails.application.secrets.oauthio_private_key,
+              :jwt_secret => Rails.application.secrets.oauthio_jwt_secret
 ```
 
 Add your Devise routes in `config/routes.rb`:
