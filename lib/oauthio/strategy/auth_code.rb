@@ -19,7 +19,6 @@ module Oauthio
         params.merge('k' => @client.id)
       end
 
-      #TODO: Put this in base.rb
       # The OAuth client_id and client_secret
       #
       # @return [Hash]
